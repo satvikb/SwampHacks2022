@@ -31,7 +31,7 @@ function makeHttpObject() {
 }
 
 //Get sentences from Syntactic Analysis
-function getSentences(HMTL, completion) {
+function getSentences(HTML, completion) {
   // Prepares a document, representing the provided text
   const document = {
     content: HTML,
@@ -47,10 +47,16 @@ function getSentences(HMTL, completion) {
     encodingType: encodingType,
   }
 
+  console.log("Sending request to Google");
   gapi.client.request({
     // API endpoint name for syntactic analysis
     'path': 'https://language.googleapis.com/v1beta2/documents:analyzeSyntax',
-  }).execute(function(){
+    'method': 'POST',
+    'body': requestObj
+  }).execute(function(res){
+    console.log(res);
+
+    var sentences = res.sentences;
     completion(sentences);
   })
 }
@@ -77,7 +83,7 @@ function beginTranslation(){
     // get sentences from google
     getSentences(html, function(sentences){
       // translate using google
-        
+      console.log("Got sentences ", sentences)
       // replace sentences with translated code
     });
 
@@ -86,7 +92,7 @@ function beginTranslation(){
 }
 
 //Bind button to correct button ID
-const button = document.querySelector('startTranslationButton');
+const button = document.querySelector('#startTranslationButton');
 
 button.addEventListener('click', event => {
   beginTranslation();
