@@ -2,21 +2,16 @@
   "name": "Translearn",
   "description": "Learn a new language anywhere!",
   "version": "1.0",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "service_worker": "background.js"
   },
-  "permissions": ["tabs", "storage", "activeTab", "scripting"],
-  "browser_action": {
+  "permissions": ["storage", "activeTab", "scripting", "tabs", "http://*/", "https://*/"],
+  "action": {
     "default_popup": "popup.html"
   },
-  "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'",
-  "oauth2": {
-    "client_id": "624451611256-f5hf3a4eirqhh38tuv13fp6o2p3uei3t.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/cloud-language",
-      "https://www.googleapis.com/auth/cloud-platform"
-    ]
-  }
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' http://localhost; object-src 'self' http://localhost;"
+  },
+  "host_permissions": ["http://localhost:8000/*"]
 }

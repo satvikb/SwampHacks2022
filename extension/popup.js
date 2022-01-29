@@ -1,28 +1,7 @@
+const SERVER_URL = "http://localhost:8000";
+
 // Initialize button with user's preferred color
 let startTranslationButton = document.getElementById("startTranslationButton");
-
-chrome.storage.sync.get("color", ({ color }) => {
-  startTranslationButton.style.backgroundColor = color;
-});
-
-// When the button is clicked, inject setPageBackgroundColor into current page
-startTranslationButton.addEventListener("click", async () => {
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: setPageBackgroundColor,
-  });
-});
-
-// The body of this function will be executed as a content script inside the
-// current page
-function setPageBackgroundColor() {
-  chrome.storage.sync.get("color", ({ color }) => {
-    console.log()
-    document.body.style.backgroundColor = color;
-  });
-}
 
 //Create HTTP object that will store the HTML code
 function makeHttpObject() {
@@ -35,7 +14,7 @@ function getSentences(HTML, completion) {
   // Prepares a document, representing the provided text
   const document = {
     content: HTML,
-    type: 'HTML',
+    type: 'PLAIN_TEXT',
   };
 
   //Specify website type
@@ -43,38 +22,66 @@ function getSentences(HTML, completion) {
 
   // create request object
   var requestObj = {
-    document: document,
     encodingType: encodingType,
+    document: document
   }
 
-  console.log("Sending request to Google");
-  gapi.client.request({
-    // API endpoint name for syntactic analysis
-    'path': 'https://language.googleapis.com/v1beta2/documents:analyzeSyntax',
-    'method': 'POST',
-    'body': requestObj
-  }).execute(function(res){
-    console.log(res);
+  // console.log("Sending request to server ", requestObj);
 
-    var sentences = res.sentences;
-    completion(sentences);
-  })
+  // send a request to localhost:8000/getSentences
+  sendRequest(SERVER_URL+"/getSentences", "POST", function(responseText){
+    completion(responseText);
+  }, requestObj);
+}
+
+function getSource(){
+  console.log(document.body.innerText)
+  // return document.documentElement.outerHTML;
+  return document.body.innerText;
 }
 
 function getLocalHTML(completion){
-  //On click, create an object 
-  var request = makeHttpObject();
 
-  //Fetch the source code and and store in request
-  request.open("GET", "/", true);
-  request.send(null);
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    var currTab = tabs[0];
+    if (currTab) { // Sanity check
+      chrome.scripting.executeScript({
+        func: getSource,
+        target: {tabId: currTab.id}
+      }, (injectionResults) => {
+        // If you try and inject into an extensions page or the webstore/NTP you'll get an error
+        if (chrome.runtime.lastError) {
+          console.log("Error injecting:"+chrome.runtime.lastError.message);
+        }else{
+          var frameResult = injectionResults[0];
+          var resultText = frameResult.result;
+          completion(resultText);
+        }
+      });
+    }
+  });
+}
+
+function sendRequest(url, method, completion, body){
+  var request = makeHttpObject();
+  request.open(method, url, true);
+
+
   request.onreadystatechange = function() {
     if (request.readyState == 4){
-      var html = request.responseText;
-      completion(html);
+      var response = request.responseText;
+      completion(response);
     }
-
   };
+
+  // check if method is POST, if so, send the body
+  if(method == "POST"){
+    // console.log("sending post ", JSON.stringify(body));
+    request.setRequestHeader("Content-Type", "application/json");
+    request.send(JSON.stringify(body));
+  }else{
+    request.send(null);
+  }
 }
 
 function beginTranslation(){
@@ -95,5 +102,29 @@ function beginTranslation(){
 const button = document.querySelector('#startTranslationButton');
 
 button.addEventListener('click', event => {
+  console.log("click")
   beginTranslation();
 });
+
+// chrome.runtime.onMessage.addListener(function(request, sender) {
+//   if (request.action == "getSource") {
+//     receivedPageSource(request.source);
+//   }
+// });
+
+// chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+//   var currTab = tabs[0];
+//   if (currTab) { 
+//     console.log("injecting")
+//     chrome.scripting.executeScript({
+//       files: ["pageSource.js"],
+//       target: {tabId: currTab.id}
+//     }, function() {
+//       // If you try and inject into an extensions page or the webstore/NTP you'll get an error
+//       console.log("Injected")
+//       if (chrome.runtime.lastError) {
+//         console.log("Error injecting:"+chrome.runtime.lastError.message);
+//       }
+//     });
+//   }
+// });
