@@ -30,39 +30,32 @@ function makeHttpObject() {
 	else if("ActiveXObject" in window)return new ActiveXObject("Msxml2.XMLHTTP");
 }
 
-//Prepare docuement for Syntactic Analysis
-function makeDocument(HMTL) {
-  // Imports the Google Cloud client library
-  //const language = require('@google-cloud/language');
-  // Creates a client
-  //const client = new language.LanguageServiceClient();
-  //Set text = raw HTML
-  const text = HMTL;
-
+//Get sentences from Syntactic Analysis
+function getSentences(HMTL, completion) {
   // Prepares a document, representing the provided text
   const document = {
-    content: text,
+    content: HTML,
     type: 'HTML',
   };
 
   //Specify website type
   const encodingType = 'UTF8';
 
-  // Detects the sentiment of the document
-  const [syntax] = await client.analyzeSyntax({document, encodingType});
+  // create request object
+  var requestObj = {
+    document: document,
+    encodingType: encodingType,
+  }
 
-  console.log('Tokens:');
-  syntax.tokens.forEach(part => {
-    console.log(`${part.partOfSpeech.tag}: ${part.text.content}`);
-    console.log('Morphology:', part.partOfSpeech);
-  });
+  gapi.client.request({
+    // API endpoint name for syntactic analysis
+    'path': 'https://googleapis.com/...',
+  }).execute(function(){
+    completion(sentences);
+  })
 }
 
-//Bind button to correct button ID
-const button = document.querySelector('startTranslationButton');
-
-button.addEventListener('click', event => {
-
+function getLocalHTML(completion){
   //On click, create an object 
   var request = makeHttpObject();
 
@@ -70,9 +63,31 @@ button.addEventListener('click', event => {
   request.open("GET", "/", true);
   request.send(null);
   request.onreadystatechange = function() {
-    if (request.readyState == 4)
-      console.log(request.responseText);
+    if (request.readyState == 4){
+      var html = request.responseText;
+      completion(html);
+    }
+
   };
+}
 
+function beginTranslation(){
+  // get local HTML code
+  getLocalHTML(function(html){
+    // get sentences from google
+    getSentences(html, function(sentences){
+      // translate using google
 
+      // replace sentences with translated code
+    });
+
+  })
+
+}
+
+//Bind button to correct button ID
+const button = document.querySelector('startTranslationButton');
+
+button.addEventListener('click', event => {
+  beginTranslation();
 });
