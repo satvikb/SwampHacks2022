@@ -23,3 +23,17 @@ function setPageBackgroundColor() {
     document.body.style.backgroundColor = color;
   });
 }
+
+//When on button is clicked, get HTML information from URL
+function makeHttpObject() {
+  if("XMLHttpRequest" in window)return new XMLHttpRequest();
+	else if("ActiveXObject" in window)return new ActiveXObject("Msxml2.XMLHTTP");
+}
+
+var request = makeHttpObject();
+request.open("GET", "/", true);
+request.send(null);
+request.onreadystatechange = function() {
+  if (request.readyState == 4)
+    console.log(request.responseText);
+};
