@@ -49,7 +49,7 @@ function getSentences(HMTL, completion) {
 
   gapi.client.request({
     // API endpoint name for syntactic analysis
-    'path': 'https://googleapis.com/...',
+    'path': 'https://language.googleapis.com/v1beta2/documents:analyzeSyntax',
   }).execute(function(){
     completion(sentences);
   })
@@ -77,7 +77,7 @@ function beginTranslation(){
     // get sentences from google
     getSentences(html, function(sentences){
       // translate using google
-
+        
       // replace sentences with translated code
     });
 

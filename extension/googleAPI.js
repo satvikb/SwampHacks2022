@@ -1,10 +1,10 @@
 function start() {
   // 2. Initialize the JavaScript client library.
   gapi.client.init({
-    'apiKey': 'YOUR_API_KEY',
+    'apiKey': 'AIzaSyCDkaPpTcIp8KoZ4UAd5q2gu24ri4NSUWc',
     // clientId and scope are optional if auth is not required.
-    'clientId': 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
-    'scope': 'profile',
+    'clientId': '624451611256-f5hf3a4eirqhh38tuv13fp6o2p3uei3t.apps.googleusercontent.com',
+    'scope': 'https://www.googleapis.com/auth/cloud-language',
   }).then(function() {
 
   }, function(reason) {
