@@ -1,0 +1,13 @@
+.translearnspoiler, .translearnspoiler2{ 
+  background-color:yellow;
+  color: rgba(0, 0, 0, 0);
+}
+
+.translearnspoiler:hover{
+  color: rgba(0, 0, 0, 1.0);
+  }
+
+.translearnspoiler2:hover { 
+  color: rgba(0, 0, 0, 1.0);
+
+  }
