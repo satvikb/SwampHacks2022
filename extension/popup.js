@@ -71,6 +71,22 @@ function getLocalHTML(completion){
   });
 }
 
+function injectCSS(){
+  runFunctionWithCurrentTab(function(currTab){
+    chrome.scripting.insertCSS({
+      files: ["css/translearnHelper.css"],
+      target: {tabId: currTab.id}
+    }, () => {
+      // If you try and inject into an extensions page or the webstore/NTP you'll get an error
+      if (chrome.runtime.lastError) {
+        console.log("Error injecting:"+chrome.runtime.lastError.message);
+      }else{
+        console.log("injectCSS inject")
+      }
+    });
+  });
+}
+
 function sendRequest(url, method, completion, body){
   var request = makeHttpObject();
   request.open(method, url, true);
@@ -146,6 +162,7 @@ function runFunctionWithCurrentTab(callback){
 function beginTranslation(){
   // get local HTML code
   getLocalHTML(function(html){
+    injectCSS();
     // get sentences translated from google
     getSentences(html, function(sentences){
       console.log("Got sentences ", sentences)

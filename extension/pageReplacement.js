@@ -13,9 +13,11 @@ function handlePageTranslation(sentences, numReplace){
     // call replace
     var original = selected[i].original;
     var translated = selected[i].translated;
+
+    var translatedWithSpoiler = translated + "<span class='translearnspoiler2'>Original: " + original + "</span>";
     console.log("replacing ", original, " with ", translated)
     var re = new RegExp(original,"g");
-    currentPage = currentPage.replace(re, translated);
+    currentPage = currentPage.replace(re, translatedWithSpoiler);
     // console.log("equal: ", newReplace == currentPage)
 
     // currentPage = replaceTextOnPage(currentPage, selected[i].original, selected[i].translated);

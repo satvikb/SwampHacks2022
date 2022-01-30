@@ -14,15 +14,11 @@ var jsonParser = bodyParser.json()
 app.use(bodyParser.json({limit: "50mb"}));
 
 app.post('/getSentences', jsonParser, async function(request,response){
-  //request.id
   var body = request.body;
   console.log("request body ", body.document.type, body.encodingType)
 
   var document = body.document;
-
-  // Detects the sentiment of the text
   try{
-    // const [result] = await client.analyzeSentiment({document: document});
     const [result] = await language.analyzeSyntax({document: document});
 
     const sentencesObject = result.sentences;
@@ -47,19 +43,13 @@ app.post('/getSentences', jsonParser, async function(request,response){
       sentencePair.translated = translations[i];
       sentencePairs.push(sentencePair);
     }
-    
-    // console.log(`Text: ${text}`);
-    // console.log(`Sentiment score: ${sentiment.score}`);
-    // console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
     response.send(sentencePairs)
   }catch(err){
-    console.log(err)
     response.send(err)
   }
-
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Listening on port ${port}`)
 })
 
