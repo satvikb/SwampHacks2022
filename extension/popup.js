@@ -3,6 +3,21 @@ const SERVER_URL = "http://localhost:8000";
 // Initialize button with user's preferred color
 let startTranslationButton = document.getElementById("startTranslationButton");
 
+// difficulty button variables
+var easyButton = document.getElementById("easyDifficultyButton");
+var mediumButton = document.getElementById("mediumDifficultyButton");
+var hardButton = document.getElementById("hardDifficultyButton");
+
+// 0 - easy
+// 1 - medium
+// 2 - hard
+var currentDifficulty = 0;
+var numReplaceDictionary = {
+  0: 3,
+  1: 8,
+  2: 15
+}
+
 //Create HTTP object that will store the HTML code
 function makeHttpObject() {
   if("XMLHttpRequest" in window)return new XMLHttpRequest();
@@ -35,30 +50,24 @@ function getSentences(HTML, completion) {
 }
 
 function getSource(){
-  console.log(document.body.innerText)
-  // return document.documentElement.outerHTML;
   return document.body.innerText;
 }
 
 function getLocalHTML(completion){
-
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    var currTab = tabs[0];
-    if (currTab) { // Sanity check
-      chrome.scripting.executeScript({
-        func: getSource,
-        target: {tabId: currTab.id}
-      }, (injectionResults) => {
-        // If you try and inject into an extensions page or the webstore/NTP you'll get an error
-        if (chrome.runtime.lastError) {
-          console.log("Error injecting:"+chrome.runtime.lastError.message);
-        }else{
-          var frameResult = injectionResults[0];
-          var resultText = frameResult.result;
-          completion(resultText);
-        }
-      });
-    }
+  runFunctionWithCurrentTab(function(currTab){
+    chrome.scripting.executeScript({
+      func: getSource,
+      target: {tabId: currTab.id}
+    }, (injectionResults) => {
+      // If you try and inject into an extensions page or the webstore/NTP you'll get an error
+      if (chrome.runtime.lastError) {
+        console.log("Error injecting:"+chrome.runtime.lastError.message);
+      }else{
+        var frameResult = injectionResults[0];
+        var resultText = frameResult.result;
+        completion(resultText);
+      }
+    });
   });
 }
 
@@ -84,47 +93,87 @@ function sendRequest(url, method, completion, body){
   }
 }
 
+function setTranslateArguments(sentences, numReplace){
+  window.translearnNumReplace = numReplace;
+  window.translearnSentences = sentences;
+  console.log("set arguments ", sentences.length, numReplace);
+}
+
+function doTranslate(sentences){
+  var numReplace = numReplaceDictionary[currentDifficulty];
+
+  runFunctionWithCurrentTab(function(currTab){
+    chrome.scripting.executeScript({
+      func: setTranslateArguments,
+      target: {tabId: currTab.id},
+      args: [sentences, numReplace]
+    }, (ir) => {
+      // If you try and inject into an extensions page or the webstore/NTP you'll get an error
+      if (chrome.runtime.lastError) {
+        console.log("Error injecting:"+chrome.runtime.lastError.message);
+      }else{
+        
+        console.log("starting replacement")
+        chrome.scripting.executeScript({
+          files: ["pageReplacement.js"],
+          target: {tabId: currTab.id}
+        }, (injectionResults) => {
+          // If you try and inject into an extensions page or the webstore/NTP you'll get an error
+          if (chrome.runtime.lastError) {
+            console.log("Error injecting:"+chrome.runtime.lastError.message);
+          }else{
+            console.log("finish translate inject")
+          }
+        });
+
+
+      }
+    });
+
+    
+  });
+}
+
+function runFunctionWithCurrentTab(callback){
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    var currTab = tabs[0];
+    if (currTab) { // Sanity check
+      callback(currTab);
+    }
+  });
+}
+
 function beginTranslation(){
   // get local HTML code
   getLocalHTML(function(html){
-    // get sentences from google
+    // get sentences translated from google
     getSentences(html, function(sentences){
-      // translate using google
       console.log("Got sentences ", sentences)
       // replace sentences with translated code
+      doTranslate(JSON.parse(sentences));
     });
-
   })
-
 }
 
-//Bind button to correct button ID
-const button = document.querySelector('#startTranslationButton');
-
-button.addEventListener('click', event => {
+startTranslationButton.addEventListener('click', event => {
   console.log("click")
   beginTranslation();
 });
 
-// chrome.runtime.onMessage.addListener(function(request, sender) {
-//   if (request.action == "getSource") {
-//     receivedPageSource(request.source);
-//   }
-// });
+// difficulty button listeners
+easyButton.addEventListener('click', event => {
+  console.log("easy")
+  currentDifficulty = 0;
+});
 
-// chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-//   var currTab = tabs[0];
-//   if (currTab) { 
-//     console.log("injecting")
-//     chrome.scripting.executeScript({
-//       files: ["pageSource.js"],
-//       target: {tabId: currTab.id}
-//     }, function() {
-//       // If you try and inject into an extensions page or the webstore/NTP you'll get an error
-//       console.log("Injected")
-//       if (chrome.runtime.lastError) {
-//         console.log("Error injecting:"+chrome.runtime.lastError.message);
-//       }
-//     });
-//   }
-// });
+// medium
+mediumButton.addEventListener('click', event => {
+  console.log("medium")
+  currentDifficulty = 1;
+});
+
+// hard
+hardButton.addEventListener('click', event => {
+  console.log("hard")
+  currentDifficulty = 2;
+});

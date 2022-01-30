@@ -39,11 +39,19 @@ app.post('/getSentences', jsonParser, async function(request,response){
     let [translations] = await translate.translate(sentences, target);
     translations = Array.isArray(translations) ? translations : [translations];
 
- 
+    // create an object that pairs the original sentence with the translated sentence
+    var sentencePairs = [];
+    for (var i = 0; i < translations.length; i++) {
+      var sentencePair = {};
+      sentencePair.original = sentences[i];
+      sentencePair.translated = translations[i];
+      sentencePairs.push(sentencePair);
+    }
+    
     // console.log(`Text: ${text}`);
     // console.log(`Sentiment score: ${sentiment.score}`);
     // console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
-    response.send(translations)
+    response.send(sentencePairs)
   }catch(err){
     console.log(err)
     response.send(err)
