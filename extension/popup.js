@@ -194,3 +194,15 @@ hardButton.addEventListener('click', event => {
   console.log("hard")
   currentDifficulty = 2;
 });
+
+const languages = {"English": "en", "Chinese (Simplified)": "zh", "Spanish": "es", "German": "de", "French": "fr", "Hindi": "hi", "Arabic": "ar", "Russian": "ru", "Japanese": "ja", "Dutch": "nl"}
+var list = document.getElementById("languages")
+for (const [key, value] of Object.entries(languages)) {
+  var anchor = document.createElement("a");
+  anchor.href = "#";
+  anchor.innerText = key;
+
+  var elem = document.createElement("li");
+  elem.appendChild(anchor);
+  list.appendChild(elem);
+}
