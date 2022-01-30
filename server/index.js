@@ -17,6 +17,7 @@ app.post('/getSentences', jsonParser, async function(request,response){
   var body = request.body;
   console.log("request body ", body.document.type, body.encodingType)
 
+  var languageCode = body.languageCode;
   var document = body.document;
   try{
     const [result] = await language.analyzeSyntax({document: document});
@@ -28,11 +29,19 @@ app.post('/getSentences', jsonParser, async function(request,response){
       var sentence = sentencesObject[i];
       var sentenceText = sentence.text.content;
       // TODO filter out sentences that are too short, etc
-      sentences.push(sentenceText);
+      // only add if there are more than 5 words
+      
+      // only add if there are less than 128 sentences already
+      if (sentences.length > 127){
+        break;
+      }
+
+      if (sentenceText.split(" ").length > 4){
+        sentences.push(sentenceText);
+      }
     }
     
-    var target = "sr-Latn"
-    let [translations] = await translate.translate(sentences, target);
+    let [translations] = await translate.translate(sentences, languageCode);
     translations = Array.isArray(translations) ? translations : [translations];
 
     // create an object that pairs the original sentence with the translated sentence

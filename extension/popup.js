@@ -12,10 +12,11 @@ var hardButton = document.getElementById("hardDifficultyButton");
 // 1 - medium
 // 2 - hard
 var currentDifficulty = 0;
+var currentLanguageCode = "es";
 var numReplaceDictionary = {
-  0: 3,
-  1: 8,
-  2: 15
+  0: 10,
+  1: 20,
+  2: 40
 }
 
 //Create HTTP object that will store the HTML code
@@ -38,7 +39,8 @@ function getSentences(HTML, completion) {
   // create request object
   var requestObj = {
     encodingType: encodingType,
-    document: document
+    document: document,
+    languageCode: currentLanguageCode
   }
 
   // console.log("Sending request to server ", requestObj);
@@ -195,11 +197,21 @@ hardButton.addEventListener('click', event => {
   currentDifficulty = 2;
 });
 
+// set language
+function sl(name, code){
+  currentLanguageCode = code;
+  document.getElementById("languageButton").innerText = name;
+  UIkit.dropdown(document.getElementById("languageDropdown")).hide(0);
+}
+
 const languages = {"English": "en", "Chinese (Simplified)": "zh", "Spanish": "es", "German": "de", "French": "fr", "Hindi": "hi", "Arabic": "ar", "Russian": "ru", "Japanese": "ja", "Dutch": "nl"}
 var list = document.getElementById("languages")
 for (const [key, value] of Object.entries(languages)) {
   var anchor = document.createElement("a");
-  anchor.href = "#";
+  anchor.onclick = function(){
+    sl(key, value);
+    return false;
+  }
   anchor.innerText = key;
 
   var elem = document.createElement("li");
